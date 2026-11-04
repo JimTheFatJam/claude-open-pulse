@@ -60,8 +60,23 @@ class ScreenshotTest {
         compose.setContent {
             OpenPulseTheme(themeMode = theme) { OpenPulseRoot(vm, false, null, {}, null, {}) }
         }
-        compose.waitUntil(15_000) { vm.measurements.value?.isNotEmpty() == true }
-        compose.waitForIdle()
+        pump { vm.measurements.value?.isNotEmpty() == true && vm.settings.value != null }
+    }
+
+    /** Runs the main looper and lets background (Room/DataStore) threads deliver results. */
+    private fun pump(maxMs: Long = 20_000, ready: () -> Boolean) {
+        val end = System.currentTimeMillis() + maxMs
+        while (System.currentTimeMillis() < end) {
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            compose.waitForIdle()
+            if (ready()) break
+            Thread.sleep(100)
+        }
+        repeat(5) {
+            Thread.sleep(100)
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            compose.waitForIdle()
+        }
     }
 
     private fun save(name: String) {
@@ -72,7 +87,7 @@ class ScreenshotTest {
 
     private fun tab(label: String) {
         compose.onAllNodesWithText(label)[0].performClick()
-        compose.waitForIdle()
+        pump(1_000) { false }
     }
 
     @Test fun lightScreens() {
