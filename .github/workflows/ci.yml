@@ -49,9 +49,9 @@ jobs:
         continue-on-error: true
         run: |
           shopt -s nullglob
-          for f in app/build/screenshots/*.png; do
+          for f in app/build/screenshots/01-*.png app/build/screenshots/03-*.png; do
             n=$(basename "$f" .png)
-            convert "$f" -resize 50% -quality 60 "/tmp/$n.jpg"
+            convert "$f" -resize 45% -quality 55 "/tmp/$n.jpg"
             echo "=====BEGIN $n====="
             base64 -w 4000 "/tmp/$n.jpg"
             echo "=====END $n====="
