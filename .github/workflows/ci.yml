@@ -43,6 +43,20 @@ jobs:
         continue-on-error: true
         run: ./gradlew --no-daemon :app:testDebugUnitTest -Popenpulse.screenshots=true --tests 'app.openpulse.ScreenshotTest'
 
+      # Compact copies in the log so screenshots can be inspected without artifact access.
+      - name: Print screenshots (base64 JPEG)
+        if: always()
+        continue-on-error: true
+        run: |
+          shopt -s nullglob
+          for f in app/build/screenshots/*.png; do
+            n=$(basename "$f" .png)
+            convert "$f" -resize 50% -quality 60 "/tmp/$n.jpg"
+            echo "=====BEGIN $n====="
+            base64 -w 4000 "/tmp/$n.jpg"
+            echo "=====END $n====="
+          done
+
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
