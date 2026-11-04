@@ -1,0 +1,39 @@
+# Gradle / build
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+.kotlin/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local configuration (SDK paths, machine-specific)
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+.DS_Store
+
+# Signing material and secrets - NEVER commit these
+*.jks
+*.keystore
+*.p12
+*.pem
+*.der
+keystore.properties
+signing.properties
+release-signing.properties
+*.b64
+.env
+.env.*
+secrets/
+
+# Generated APK/AAB outputs
+*.apk
+*.aab
+*.apk.sha256
+output-metadata.json

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Open Pulse</string>
+    <string name="channel_reminders">Measurement reminders</string>
+    <string name="channel_updates">App updates</string>
+</resources>
