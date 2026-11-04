@@ -94,6 +94,12 @@ android {
             // Screenshot tests only run when requested: ./gradlew :app:testDebugUnitTest -Popenpulse.screenshots=true
             it.systemProperty("openpulse.screenshots", (findProperty("openpulse.screenshots") as String?) ?: "false")
             it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
+            it.testLogging {
+                events("failed")
+                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+                showCauses = true
+                showStackTraces = true
+            }
         }
     }
     packaging {
