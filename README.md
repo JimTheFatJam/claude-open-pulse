@@ -83,6 +83,10 @@ Requirements: JDK 17, Android SDK (compile SDK 35).
 Debug builds use the application id `app.openpulse.debug`, so they can be installed next to
 a release build. A debug build cannot update to a release build (different signing key).
 
+UI screenshots (Robolectric, rendered with demo data) can be generated locally with
+`./gradlew :app:testDebugUnitTest -Popenpulse.screenshots=true --tests 'app.openpulse.ScreenshotTest'`
+→ `app/build/screenshots/`. CI uploads them as the `screenshots` artifact.
+
 GitHub Actions:
 
 - `.github/workflows/ci.yml` — tests + debug APK artifact on every push / pull request.

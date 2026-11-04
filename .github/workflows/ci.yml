@@ -39,23 +39,9 @@ jobs:
       - name: Assemble release APK (unsigned, R8 check)
         run: ./gradlew --no-daemon --stacktrace :app:assembleRelease
 
+      # Renders every main screen with demo data (light + dark) - doubles as a UI smoke test.
       - name: UI screenshots (Robolectric)
-        continue-on-error: true
         run: ./gradlew --no-daemon :app:testDebugUnitTest -Popenpulse.screenshots=true --tests 'app.openpulse.ScreenshotTest'
-
-      # Compact copies in the log so screenshots can be inspected without artifact access.
-      - name: Print screenshots (base64 JPEG)
-        if: always()
-        continue-on-error: true
-        run: |
-          shopt -s nullglob
-          for f in app/build/screenshots/01-*.png app/build/screenshots/03-*.png; do
-            n=$(basename "$f" .png)
-            convert "$f" -resize 45% -quality 55 "/tmp/$n.jpg"
-            echo "=====BEGIN $n====="
-            base64 -w 4000 "/tmp/$n.jpg"
-            echo "=====END $n====="
-          done
 
       - name: Upload screenshots
         if: always()
