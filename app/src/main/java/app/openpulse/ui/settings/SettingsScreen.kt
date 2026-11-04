@@ -278,7 +278,7 @@ private fun SettingRow(icon: ImageVector, title: String, subtitle: String? = nul
     ListItem(
         modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
         headlineContent = { Text(title, color = if (destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface) },
-        supportingContent = subtitle?.let { { Text(it) } },
+        supportingContent = if (subtitle != null) ({ Text(subtitle) }) else null,
         leadingContent = { Icon(icon, null, tint = if (destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant) },
         trailingContent = if (onClick != null && !destructive) ({ Icon(Icons.Outlined.ChevronRight, null) }) else null,
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
@@ -290,7 +290,7 @@ fun Toggle(title: String, subtitle: String?, checked: Boolean, enabled: Boolean 
     ListItem(
         modifier = Modifier.clickable(enabled = enabled) { onChange(!checked) },
         headlineContent = { Text(title) },
-        supportingContent = subtitle?.let { { Text(it) } },
+        supportingContent = if (subtitle != null) ({ Text(subtitle) }) else null,
         trailingContent = { Switch(checked = checked, onCheckedChange = onChange, enabled = enabled) },
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
     )

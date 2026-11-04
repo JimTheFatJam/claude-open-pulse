@@ -76,7 +76,7 @@ class UpdateManager(
         WorkManager.getInstance(context).enqueueUniqueWork("update-check", ExistingWorkPolicy.KEEP, request)
     }
 
-    suspend fun check(manual: Boolean) = checkMutex.withLock {
+    suspend fun check(manual: Boolean): Unit = checkMutex.withLock<Unit> {
         val busy = _state.value
         if (busy is UpdateState.Downloading || busy is UpdateState.Verifying || busy is UpdateState.Installing) return@withLock
         if (!config.isConfigured) {

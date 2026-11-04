@@ -35,6 +35,22 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
+      # No signing secrets here: produces an unsigned release APK, validating R8/minification.
+      - name: Assemble release APK (unsigned, R8 check)
+        run: ./gradlew --no-daemon --stacktrace :app:assembleRelease
+
+      - name: UI screenshots (Robolectric)
+        continue-on-error: true
+        run: ./gradlew --no-daemon :app:testDebugUnitTest -Popenpulse.screenshots=true --tests 'app.openpulse.ScreenshotTest'
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: app/build/screenshots/
+          if-no-files-found: ignore
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:

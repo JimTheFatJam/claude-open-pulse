@@ -90,6 +90,11 @@ android {
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            // Screenshot tests only run when requested: ./gradlew :app:testDebugUnitTest -Popenpulse.screenshots=true
+            it.systemProperty("openpulse.screenshots", (findProperty("openpulse.screenshots") as String?) ?: "false")
+            it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
+        }
     }
     packaging {
         resources.excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "/META-INF/LICENSE*")
@@ -144,4 +149,7 @@ dependencies {
     testImplementation(libs.androidx.test.junit)
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
