@@ -1,11 +1,9 @@
 package app.openpulse
 
 import android.graphics.Bitmap
-import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -36,7 +34,7 @@ import java.time.ZoneId
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], application = OpenPulseApp::class, qualifiers = "w400dp-h860dp-xhdpi")
 class ScreenshotTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
 
     @Before fun onlyWhenRequested() { assumeTrue(System.getProperty("openpulse.screenshots") == "true") }
 
@@ -80,7 +78,10 @@ class ScreenshotTest {
     }
 
     private fun save(name: String) {
-        val bmp = compose.onRoot().captureToImage().asAndroidBitmap()
+        // Draw the view hierarchy directly (PixelCopy-based capture is unreliable on Robolectric).
+        val view = compose.activity.window.decorView
+        val bmp = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        compose.runOnUiThread { view.draw(android.graphics.Canvas(bmp)) }
         val dir = File("build/screenshots").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
