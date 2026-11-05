@@ -34,6 +34,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # tags + history for release notes
 
       - name: Resolve version
         id: version
@@ -99,6 +101,25 @@ jobs:
           cp "$APK" "dist/$NAME"
           (cd dist && sha256sum "$NAME" > "$NAME.sha256" && cat "$NAME.sha256")
 
+      - name: Write release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          PREV=$(git tag --list 'v*' --sort=-v:refname | grep -vx "v$VERSION" | head -1 || true)
+          {
+            echo "## Open Pulse v$VERSION"
+            echo
+            if [ -n "$PREV" ]; then
+              echo "### Changes since $PREV"
+              git log --no-merges --pretty='- %s' "$PREV..HEAD"
+            else
+              echo "First release."
+            fi
+            echo
+            echo "SHA-256: \`$(cut -d' ' -f1 "dist/OpenPulse-v$VERSION.apk.sha256")\`"
+          } > dist/RELEASE_NOTES.md
+          cat dist/RELEASE_NOTES.md
+
       - name: Remove keystore
         if: always()
         run: rm -f "$RUNNER_TEMP/release.jks"
@@ -110,7 +131,9 @@ jobs:
           name: Open Pulse v${{ steps.version.outputs.version }}
           target_commitish: ${{ github.sha }}
           prerelease: ${{ steps.version.outputs.prerelease }}
-          generate_release_notes: true
+          # GitHub's auto-generated notes endpoint returned persistent HTTP 500s; write our own.
+          generate_release_notes: false
+          body_path: dist/RELEASE_NOTES.md
           fail_on_unmatched_files: true
           files: |
             dist/OpenPulse-v${{ steps.version.outputs.version }}.apk
