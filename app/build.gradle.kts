@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 // ---------- Versioning ----------
@@ -110,8 +111,10 @@ kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
+// Room's Gradle plugin exports schemas per variant and copies them safely, avoiding the
+// race where parallel debug/release KSP tasks write the same schema JSON file.
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 if (!hasReleaseSigning) {
