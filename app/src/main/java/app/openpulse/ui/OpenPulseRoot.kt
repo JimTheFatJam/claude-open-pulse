@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -118,14 +119,19 @@ fun OpenPulseRoot(
     ) { padding ->
         Row(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)) {
             if (wide && isTopLevel) {
-                NavigationRail(header = { Spacer(Modifier.height(8.dp)) }) {
+                // Inner side padding keeps labels like "Measurements" away from the screen edge.
+                NavigationRail(
+                    header = { Spacer(Modifier.height(8.dp)) },
+                    windowInsets = androidx.compose.material3.NavigationRailDefaults.windowInsets
+                        .add(WindowInsets(left = 12.dp, right = 8.dp)),
+                ) {
                     Spacer(Modifier.weight(1f))
                     topLevel.forEach { t ->
                         NavigationRailItem(
                             selected = current?.hierarchy?.any { it.route == t.route } == true,
                             onClick = { go(t.route) },
                             icon = { Icon(t.icon, null) },
-                            label = { Text(t.label) },
+                            label = { FitLabel(t.label, maxWidth = 84.dp) },
                         )
                     }
                     Spacer(Modifier.weight(1f))
@@ -173,14 +179,16 @@ private fun LockScreen(error: String?, onUnlock: () -> Unit) {
  * labels such as "Measurements" never overflow on narrow screens or with large font sizes.
  */
 @Composable
-private fun FitLabel(text: String) {
+private fun FitLabel(text: String, maxWidth: androidx.compose.ui.unit.Dp? = null) {
     androidx.compose.foundation.layout.BoxWithConstraints(
-        Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+        (if (maxWidth != null) Modifier.widthIn(max = maxWidth) else Modifier.fillMaxWidth()).padding(horizontal = 2.dp),
         contentAlignment = Alignment.Center,
     ) {
         val measurer = androidx.compose.ui.text.rememberTextMeasurer()
         val base = MaterialTheme.typography.labelMedium
-        val maxPx = constraints.maxWidth
+        // Rail items may measure labels unbounded; fall back to the explicit cap.
+        val cap = maxWidth?.let { with(androidx.compose.ui.platform.LocalDensity.current) { it.roundToPx() } }
+        val maxPx = if (constraints.hasBoundedWidth) constraints.maxWidth else (cap ?: Int.MAX_VALUE)
         val style = remember(text, maxPx, base) {
             var size = base.fontSize.value
             var st = base

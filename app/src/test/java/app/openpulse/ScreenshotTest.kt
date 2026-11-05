@@ -106,4 +106,12 @@ class ScreenshotTest {
         render(vm, ThemeMode.DARK)
         save("06-dashboard-dark-weight")
     }
+
+    @Test @Config(qualifiers = "w1000dp-h700dp-xhdpi")
+    fun tabletDashboard() {
+        val vm = prepare()
+        render(vm, ThemeMode.LIGHT)
+        save("07-dashboard-tablet")
+        tab("Measurements"); save("08-measurements-tablet")
+    }
 }
