@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -99,13 +101,14 @@ fun OpenPulseRoot(
         snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = {
             if (!wide && isTopLevel) {
-                NavigationBar {
+                // Small side padding so edge labels never touch the screen edges.
+                NavigationBar(windowInsets = androidx.compose.material3.NavigationBarDefaults.windowInsets.add(WindowInsets(left = 6.dp, right = 6.dp))) {
                     topLevel.forEach { t ->
                         NavigationBarItem(
                             selected = current?.hierarchy?.any { it.route == t.route } == true,
                             onClick = { go(t.route) },
                             icon = { Icon(t.icon, null) },
-                            label = { Text(t.label, maxLines = 1) },
+                            label = { FitLabel(t.label) },
                         )
                     }
                 }
@@ -162,5 +165,36 @@ private fun LockScreen(error: String?, onUnlock: () -> Unit) {
             Spacer(Modifier.height(24.dp))
             Button(onClick = onUnlock) { Text("Unlock") }
         }
+    }
+}
+
+/**
+ * Single-line label that shrinks its font (down to 9 sp) to fit the item width, so long
+ * labels such as "Measurements" never overflow on narrow screens or with large font sizes.
+ */
+@Composable
+private fun FitLabel(text: String) {
+    androidx.compose.foundation.layout.BoxWithConstraints(
+        Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        val measurer = androidx.compose.ui.text.rememberTextMeasurer()
+        val base = MaterialTheme.typography.labelMedium
+        val maxPx = constraints.maxWidth
+        val style = remember(text, maxPx, base) {
+            var size = base.fontSize.value
+            var st = base
+            while (size > 9f) {
+                st = base.copy(fontSize = androidx.compose.ui.unit.TextUnit(size, androidx.compose.ui.unit.TextUnitType.Sp))
+                if (measurer.measure(text, st, maxLines = 1, softWrap = false).size.width <= maxPx) break
+                size -= 0.5f
+            }
+            st
+        }
+        Text(
+            text, style = style, maxLines = 1, softWrap = false,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+        )
     }
 }
